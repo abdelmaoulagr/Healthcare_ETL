@@ -30,7 +30,8 @@ with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval
     )
     load_task = PythonOperator(
         task_id="load_to_db",
-        python_callable=load_to_db,
+        python_callable=load_to_db, #connect to ID
+        provide_context=True, # Provide the context to PostgresOperator
     )
 
     extract_task >> transform_task >> load_task
