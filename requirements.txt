@@ -14,6 +14,7 @@ apache-airflow-providers-http==5.2.1
 apache-airflow-providers-imap==3.8.3
 apache-airflow-providers-smtp==2.0.1
 apache-airflow-providers-sqlite==4.0.1
+apache-airflow-providers-openlineage==2.1.1
 apispec==6.8.1
 appnope==0.1.4
 argcomplete==3.6.0

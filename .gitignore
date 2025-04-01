@@ -5,4 +5,4 @@ config
 *.log
 airflow.db
 *.env
-airflow_home
+logs

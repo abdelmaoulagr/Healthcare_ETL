@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from etls.extract import extract_fhir_data
 from etls.transform import transform_fhir_data
+from etls.load import load_to_db
 
 
 default_args = {
@@ -27,11 +28,11 @@ with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval
         task_id="transform_fhir_data",
         python_callable=transform_fhir_data,
     )
-    # load_task = PythonOperator(
-    #     task_id="load_to_db",
-    #     python_callable=load_to_db,
-    # )
+    load_task = PythonOperator(
+        task_id="load_to_db",
+        python_callable=load_to_db,
+    )
 
-    extract_task >> transform_task 
+    extract_task >> transform_task >> load_task
 
 
