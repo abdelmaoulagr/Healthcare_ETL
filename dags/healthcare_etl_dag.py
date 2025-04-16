@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from etls.extract import extract_fhir_data
 from etls.transform import transform_fhir_data
 from etls.load import load_to_db
+from etls.pipeline import fhir_pipline
 
 
 default_args = {
@@ -19,21 +20,23 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
-with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval="@daily") as dag:
+with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval="@once") as dag:
+
     extract_task = PythonOperator(
         task_id="extract_fhir_data",
-        python_callable=extract_fhir_data,
+        python_callable=fhir_pipline,
     )
-    transform_task = PythonOperator(
-        task_id="transform_fhir_data",
-        python_callable=transform_fhir_data,
-    )
-    load_task = PythonOperator(
-        task_id="load_to_db",
-        python_callable=load_to_db, #connect to ID
-        provide_context=True, # Provide the context to PostgresOperator
-    )
+    # transform_task = PythonOperator(
+    #     task_id="transform_fhir_data",
+    #     python_callable=transform_fhir_data,
+    # )
+    # load_task = PythonOperator(
+    #     task_id="load_to_db",
+    #     python_callable=load_to_db, #connect to ID
+    #     provide_context=True, # Provide the context to PostgresOperator
+    # )
 
-    extract_task >> transform_task >> load_task
+    extract_task 
+    # >> transform_task >> load_task
 
 

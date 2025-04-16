@@ -38,8 +38,3 @@ def transform_fhir_data():
     print(df)
     # save transformed data 
     df.to_csv(processed_path, index=False)
-
-
-
-# if __name__ == "__main__":
-#     transform_fhir_data()    

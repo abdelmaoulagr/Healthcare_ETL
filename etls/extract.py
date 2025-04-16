@@ -2,15 +2,9 @@ import requests
 import json
 from utils.constants import raw_path
 
-def extract_fhir_data():
-    url='http://hapi.fhir.org/baseR4/Observation?code=8867-4'
+def extract_fhir_data(url: str):
     response = requests.get(url)
     if response.status_code == 200:
-        # Create the directory if it doesn't exist
-        raw_path.parent.mkdir(parents=True, exist_ok=True)
-        # Write the JSON data to the file
-        with open(raw_path, "w") as f:
-            json.dump(response.json(), f)
-        print("Data extracted successfully!")
+        return response.json()
     else:
-        raise Exception("API request failed")
+        raise Exception(f"API request failed with status code {response.status_code}")
