@@ -7,11 +7,9 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-from etls.extract import extract_fhir_data
-from etls.transform import transform_fhir_data
+from etls.extract import extract_observation, extract_patients, extract_conditions
+from etls.transform import transform_observation, transform_patients, transform_conditions
 from etls.load import load_to_db
-from etls.pipeline import fhir_pipline
-
 
 default_args = {
     "owner": "airflow",
@@ -22,21 +20,47 @@ default_args = {
 
 with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval="@once") as dag:
 
-    extract_task = PythonOperator(
-        task_id="extract_fhir_data",
-        python_callable=fhir_pipline,
+    extract_observation = PythonOperator(
+        task_id="extract_observation",
+        python_callable=extract_observation,
     )
-    # transform_task = PythonOperator(
-    #     task_id="transform_fhir_data",
-    #     python_callable=transform_fhir_data,
-    # )
-    # load_task = PythonOperator(
-    #     task_id="load_to_db",
-    #     python_callable=load_to_db, #connect to ID
-    #     provide_context=True, # Provide the context to PostgresOperator
-    # )
 
-    extract_task 
-    # >> transform_task >> load_task
+    extract_patients = PythonOperator(
+        task_id="extract_patients",
+        python_callable=extract_patients,
+    )
+
+    extract_conditions = PythonOperator(
+        task_id="extract_conditions",
+        python_callable=extract_conditions,
+    )
+
+    transform_observation = PythonOperator(
+        task_id="transform_observation",
+        python_callable=transform_observation,
+    )
+
+    transform_patients = PythonOperator(
+        task_id="transform_patients",
+        python_callable=transform_patients,
+    )
+
+    transform_conditions = PythonOperator(
+        task_id="transform_conditions",
+        python_callable=transform_conditions,
+    )
+
+    load_task = PythonOperator(
+        task_id="load_to_db",
+        python_callable=load_to_db, #connect to ID
+        provide_context=True, # Provide the context to PostgresOperator
+    )
+
+    # Task dependencies
+    extract_patients >> transform_patients
+    extract_observation >> transform_observation
+    extract_conditions >> transform_conditions
+
+    [transform_patients, transform_observation, transform_conditions] >> load_task
 
 
