@@ -20,6 +20,7 @@ default_args = {
 
 with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval="@once") as dag:
 
+    # Extraction
     extract_observation = PythonOperator(
         task_id="extract_observation",
         python_callable=extract_observation,
@@ -35,6 +36,7 @@ with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval
         python_callable=extract_conditions,
     )
 
+    # Transformation
     transform_observation = PythonOperator(
         task_id="transform_observation",
         python_callable=transform_observation,
@@ -50,6 +52,7 @@ with DAG("healthcare_etl_pipeline", default_args=default_args, schedule_interval
         python_callable=transform_conditions,
     )
 
+    # Loading
     load_task = PythonOperator(
         task_id="load_to_db",
         python_callable=load_to_db, #connect to ID

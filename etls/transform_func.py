@@ -17,6 +17,7 @@ def observation_data(json_data:dict, display:str):
     for obs in observation:
         resource = obs["resource"]
         try:
+            id = resource["id"]
             patient_id = resource["subject"]["reference"].split("/")[-1]
             if not patient_id.isdigit(): raise Exception()
             code = resource["code"]["coding"][0]["code"] 
@@ -42,6 +43,7 @@ def observation_data(json_data:dict, display:str):
             # Append valid record to the list
             records.append(
                 {
+                "id":id,
                 "patient_id": patient_id,
                 "code":code,
                 "display":display,
@@ -117,7 +119,7 @@ def conditions_data(json_data):
                 "id": condition_id,
                 "patient_id": patient_id,
                 "code": code,
-                "diplay": display,
+                "display": display,
                 "onset_date": onset_date,
             })
 

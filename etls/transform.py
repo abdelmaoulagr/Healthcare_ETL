@@ -37,6 +37,7 @@ def transform_observation():
         ignore_index=True
     )
     df_observations.to_csv(f'{processed_path}/observations.csv', index=False)
+    print("Transformation success !!")
 
 
 
@@ -46,6 +47,8 @@ def transform_patients():
         patients_raw_data = json.load(f)
     patients = patients_data(patients_raw_data)
     patients.to_csv(f'{processed_path}/patients.csv', index=False)
+    print("Transformation success !!")
+
 
 
 # Transform Conditions Data
@@ -54,3 +57,4 @@ def transform_conditions():
         conditions_raw_data = json.load(f)
     Conditions = conditions_data(conditions_raw_data)
     Conditions.to_csv(f'{processed_path}/conditions.csv', index=False)
+    print("Transformation success !!")

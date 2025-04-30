@@ -1,50 +1,84 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from datetime import datetime
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.hooks.base_hook import BaseHook
 from utils.constants import processed_path
 
 def load_to_db(**kwargs):
     load_dotenv()
-    POSTGRES_USER=os.getenv('POSTGRES_USER')
-    POSTGRES_PASSWORD=os.getenv('POSTGRES_PASSWORD')
-    POSTGRES_HOST=os.getenv('POSTGRES_HOST')
-    POSTGRES_PORT=os.getenv('POSTGRES_PORT')
-    POSTGRES_DB=os.getenv('POSTGRES_DB')
-    # Database connection
-    try:
-        # conn = psycopg2.connect(
-        #     dbname=POSTGRES_DB,
-        #     user=POSTGRES_USER,
-        #     password=POSTGRES_PASSWORD,
-        #     host=POSTGRES_HOST,
-        #     port=POSTGRES_PORT
-        # )
-        # cursor = conn.cursor()
 
-        # Load CSV data
-        df = pd.read_csv(processed_path)
-        
-        # print("Connected to the database successfully!")
-        # Create SQL insert command for bulk loading data
-        insert_sql = """
-            INSERT INTO patient_vitals (patient_id, heart_rate, timestamp) 
+    # Paths for processed files
+    patients_csv = os.path.join(processed_path, "patients.csv")
+    observations_csv = os.path.join(processed_path, "observations.csv")
+    conditions_csv = os.path.join(processed_path, "conditions.csv")
+
+    try:
+        # Load all processed CSV files
+        patients_df = pd.read_csv(patients_csv)
+        observations_df = pd.read_csv(observations_csv)
+        conditions_df = pd.read_csv(conditions_csv)
+
+        # Insert statements
+        insert_patients_sql = """
+            INSERT INTO patients (patient_id, name, gender, birth_date)
             VALUES
-        """ + ",".join([f"({row['patient_id']}, {row['heart_rate']}, '{row['timestamp']}')" for _, row in df.iterrows()]) + """
+        """ + ",".join([
+            f"('{row['patient_id']}', '{row['name']}', '{row['gender']}', '{row['birth_date']}')" 
+            for _, row in patients_df.iterrows()
+        ]) + """
             ON CONFLICT (patient_id) DO NOTHING;
         """
-        # Define PostgresOperator to execute the insert SQL
-        load_task = PostgresOperator(
-            task_id="load_patient_vitals",
-            sql=insert_sql,
+
+        insert_observations_sql = """
+            INSERT INTO observations (id, patient_id, code, display, value, unit, timestamp)
+            VALUES
+        """ + ",".join([
+            f"('{row['id']}', '{row['patient_id']}', '{row['code']}', '{row['display']}', {row['value']}, '{row['unit']}', '{row['timestamp']}')" 
+            for _, row in observations_df.iterrows()
+        ]) + ";"
+
+        insert_conditions_sql = """
+            INSERT INTO conditions (id, patient_id, code, display, onset_date)
+            VALUES
+        """ + ",".join([
+            f"('{row['id']}', '{row['patient_id']}', '{row['code']}', '{row['display']}', '{row['onset_date']}')" 
+            for _, row in conditions_df.iterrows()
+        ]) + ";"
+
+
+
+        # Execute all 3 loads using PostgresOperator
+        load_patients = PostgresOperator(
+            task_id="load_patients",
+            sql=insert_patients_sql,
             postgres_conn_id="healthcare_postgres",
             autocommit=True,
         )
-          # Execute the task
-        load_task.execute(context=kwargs)
-        print("Data loaded to database successfully!")
-    
+
+        load_observations = PostgresOperator(
+            task_id="load_observations",
+            sql=insert_observations_sql,
+            postgres_conn_id="healthcare_postgres",
+            autocommit=True,
+        )
+
+        load_conditions = PostgresOperator(
+            task_id="load_conditions",
+            sql=insert_conditions_sql,
+            postgres_conn_id="healthcare_postgres",
+            autocommit=True,
+        )
+
+        # Execute them manually inside the function
+        load_patients.execute(context=kwargs)
+        load_observations.execute(context=kwargs)
+        load_conditions.execute(context=kwargs)
+
+        print("All data loaded successfully!")
+
     except Exception as e:
-        print(f"Error: {e}")
+        print("Loaded columns:", observations_df.columns)
+        print("Loaded columns:", patients_df.columns)
+        print("Loaded columns:", conditions_df.columns)
+        print(f"Error loading data to database: {e}")
