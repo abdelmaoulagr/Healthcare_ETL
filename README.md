@@ -1,17 +1,26 @@
 # Healthcare ETL Pipeline with Apache Airflow
 
-This project implements an Extract, Transform, Load (ETL) pipeline to process healthcare data from a **FHIR API**, transform it into a structured format, and load it into a PostgreSQL database for analysis. The pipeline is orchestrated using **Apache Airflow** and integrates with Tableau for visualization.
+This project implements a complete **ETL** (Extract, Transform, Load) pipeline to process structured healthcare data from a **FHIR API** (running locally via HAPI FHIR in Docker), transform it into clean tabular formats, and load it into a **PostgreSQL** database for analysis. The pipeline is orchestrated with **Apache Airflow**, running inside Docker containers.
 
 
-## 🚀 Features
 
 
-This ETL pipeline processes **patient heart rate vitals** from a public healthcare API and loads them into a PostgreSQL database. The pipeline is orchestrated with **Apache Airflow** and runs on a **Dockerized environment**.
+## 🔄 ETL Flow Overview
 
-- **Extract:** Fetches heart rate observations from the FHIR API (`http://hapi.fhir.org/baseR4/Observation?code=8867-4`) and saves them as JSON in `data/raw/`.
-- **Transform:** Processes the JSON data into a structured CSV (`data/processed/transformed_data.csv`) with patient ID, heart rate, and timestamp.
-- **Load:** Imports the CSV data into a PostgreSQL table (`patient_vitals` in `healthcare_db`).
-- **Orchestration:** Managed by an Airflow DAG (`healthcare_etl_pipeline`) running daily.
+```java
+FHIR API (Docker) ──> Airflow ──> Raw JSON ──> Transformed CSV ──> PostgreSQL
+```
+
+## 💡 Components:
+**Extract:** Pulls FHIR data (Patients, Observations, Conditions) from a HAPI FHIR server.
+
+**Transform:** Cleans, flattens, and normalizes JSON data into tabular form (CSV).
+
+**Load:** Inserts structured data into PostgreSQL tables (patients, observations, conditions).
+
+**Orchestration:** Apache Airflow DAG defines and manages task dependencies.
+
+**Environment:** Fully containerized with Docker Compose.
 
 ## 📦 Technologies Used
 
@@ -20,6 +29,31 @@ This ETL pipeline processes **patient heart rate vitals** from a public healthca
 - [PostgreSQL](https://www.postgresql.org/)
 - Python (pandas, psycopg2, sqlalchemy)
 
+
+## 🔧 FHIR Resources Processed
+- Patients
+
+- Observations (heart rate, blood pressure, body tempreture)
+
+- Conditions
+
+## 🧠 DAG Execution Flow
+
+```mermaid
+graph TD
+    Start --> ExtractPatients
+    Start --> ExtractObservations
+    Start --> ExtractConditions
+
+    ExtractPatients --> TransformPatients
+    ExtractObservations --> TransformObservations
+    ExtractConditions --> TransformConditions
+
+    TransformPatients --> LoadToDB
+    TransformObservations --> LoadToDB
+    TransformConditions --> LoadToDB
+
+```
 ## ⚙️ Setup Instructions
 
 ### 1. Clone the Repository
@@ -56,3 +90,9 @@ docker-compose up --build
 
 - Turn on and trigger the `healthcare_etl_pipeline` DAG
 
+## 📌 Notes
+- irflow task logs provide full traceability.
+
+- Extracted JSON files are saved in `/data/raw/`, and processed CSVs in `/data/processed/`.
+
+- Duplicate handling is implemented using SQL `ON CONFLICT DO NOTHING`.
