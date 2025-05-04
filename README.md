@@ -7,7 +7,7 @@ This project implements a complete **ETL** (Extract, Transform, Load) pipeline t
 
 ## 🔄 ETL Flow Overview
 
-```java
+```text
 FHIR API (Docker) ──> Airflow ──> Raw JSON ──> Transformed CSV ──> PostgreSQL
 ```
 
@@ -41,9 +41,6 @@ FHIR API (Docker) ──> Airflow ──> Raw JSON ──> Transformed CSV ─�
 
 ```mermaid
 graph TD
-    Start --> ExtractPatients
-    Start --> ExtractObservations
-    Start --> ExtractConditions
 
     ExtractPatients --> TransformPatients
     ExtractObservations --> TransformObservations
