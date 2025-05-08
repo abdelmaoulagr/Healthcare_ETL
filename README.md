@@ -88,7 +88,7 @@ docker-compose up --build
 - Turn on and trigger the `healthcare_etl_pipeline` DAG
 
 ## 📌 Notes
-- irflow task logs provide full traceability.
+- Airflow task logs provide full traceability.
 
 - Extracted JSON files are saved in `/data/raw/`, and processed CSVs in `/data/processed/`.
 
