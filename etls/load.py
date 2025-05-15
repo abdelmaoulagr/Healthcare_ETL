@@ -20,6 +20,8 @@ def load_to_db(**kwargs):
         conditions_df = pd.read_csv(conditions_csv)
 
         # Insert statements
+
+        ## Insert patients to DB
         insert_patients_sql = """
             INSERT INTO patients (patient_id, name, gender, birth_date)
             VALUES
@@ -29,7 +31,8 @@ def load_to_db(**kwargs):
         ]) + """
             ON CONFLICT (patient_id) DO NOTHING;
         """
-
+        
+        ## Insert observations to DB
         insert_observations_sql = """
             INSERT INTO observations (id, patient_id, code, display, value, unit, timestamp)
             VALUES
@@ -38,6 +41,7 @@ def load_to_db(**kwargs):
             for _, row in observations_df.iterrows()
         ]) + ";"
 
+        ## Insert conditions to DB
         insert_conditions_sql = """
             INSERT INTO conditions (id, patient_id, code, display, onset_date)
             VALUES

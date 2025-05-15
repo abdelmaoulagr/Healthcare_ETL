@@ -2,8 +2,6 @@ __pycache__/
 data/
 venv
 config
-*.log
 airflow.db
 *.env
-*.ipynb
 logs
